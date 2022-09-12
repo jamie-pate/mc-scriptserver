@@ -1,6 +1,16 @@
-import { Config, DeepPartial, ScriptServer } from 'https://esm.sh/@scriptserver/core';
-import { useEssentials } from 'https://esm.sh/@scriptserver/essentials';
-import { EventConfig } from 'https://esm.sh/@scriptserver/event';
+import { relative } from 'https://deno.land/std@0.155.0/path/posix.ts';
+
+import {
+  Config,
+  DeepPartial,
+  ScriptServer,
+} from 'https://esm.sh/@scriptserver/core?dev';
+import {
+  EssentialsConfig,
+  useEssentials,
+} from 'https://esm.sh/@scriptserver/essentials?dev';
+import { EventConfig } from 'https://esm.sh/@scriptserver/event?dev';
+import { source } from 'https://esm.sh/common-tags';
 
 type ServerProperties = Record<string, string>;
 
@@ -21,7 +31,7 @@ async function readServerProperties(dir: string) {
   const SERVER_FIRST_RUN_DELAY = 60000; // 5 seconds
   try {
     console.log('reading server.properties');
-    return (await Deno.readTextFile(`${dir}/server.properties`)).split('\n')
+    return (await Deno.readTextFile(`${dir}/server.properties`)).split(/\r?\n/g)
       .map((line) => {
         const match = /^([^=]+)=(.*)$/.exec(line);
         if (line.trimStart().startsWith('#') || !match) {
@@ -65,10 +75,20 @@ async function readServerProperties(dir: string) {
 }
 
 function startServer(serverDir: string, rconPassword: string | null = null) {
-  const config: DeepPartial<Config & {event: EventConfig}> = {
+  const commands = source`
+    ~sethome [name], ~delhome [name], ~home [name] (tp tp home),
+    ~spawn (tp to spawn),
+    ~setwarp <name>, ~delwarp <name>, ~warp <name>,
+    ~tpa <username> (tp to user),
+    ~tpahere <username> (tp user here),
+    ~tpaccept, ~tpdeny,
+    ~back (teleport back), ~day, ~night, ~weather`;
+  const config: DeepPartial<
+    Config & { event: EventConfig; essentials: EssentialsConfig }
+  > = {
     javaServer: {
       // path doesn't work in deno child_process
-      path: '.',
+      path: relative(Deno.cwd(), serverDir),
       jar: `server.jar`,
       args: ['-Xmx1024M', '-Xms1024M'],
     },
@@ -76,11 +96,24 @@ function startServer(serverDir: string, rconPassword: string | null = null) {
       port: 25575,
       password: rconPassword || '',
     },
+    essentials: {
+      motd: {
+        firstTime:
+          `Welcome to the server, \${player}! Commands are:\n${commands}`,
+        text: `Welcome back \${player}! Commands are:\n${commands}`,
+      },
+      warp: {
+        opOnly: false,
+      },
+    },
     event: {
       flavorSpecific: {
         default: {
+          // Doesn't match online-mode=false servers!
           parseChatEvent(consoleOutput: string) {
-            const parsed = consoleOutput.match(/^\[.+?\]:(?: \[Not Secure\])? <(\w+)> (.*)/i);
+            const parsed = consoleOutput.match(
+              /^\[.+?\]:(?: \[Not Secure\])? <(\w+)> (.*)/i,
+            );
             if (parsed) {
               return {
                 player: parsed[1] as string,
@@ -88,9 +121,9 @@ function startServer(serverDir: string, rconPassword: string | null = null) {
               };
             }
           },
-        }
-      }
-    }
+        },
+      },
+    },
   };
   const server = new ScriptServer(config);
   useEssentials(server);

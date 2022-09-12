@@ -14,3 +14,8 @@ rcon.port=25575
 rcon.password=password
 broadcast-rcon-to-ops=false
 ```
+
+# Attribution:
+
+Tree icon: CC Attribution-Noncommercial-No Derivate 4.0
+https://iconarchive.com/show/minecraft-icons-by-chrisl21/3D-Tree-icon.html

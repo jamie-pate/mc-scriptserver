@@ -10,11 +10,11 @@
       "type": "node",
       "program": "${workspaceFolder}/server.ts",
       "cwd": "${workspaceFolder}",
-      "runtimeExecutable": "/home/jpate/.deno/bin/deno",
+      "runtimeExecutable": "deno",
       "runtimeArgs": [
         "run",
         "--unstable",
-        "--inspect-brk",
+        "--inspect",
         "--allow-all"
       ],
       "attachSimplePort": 9229,
