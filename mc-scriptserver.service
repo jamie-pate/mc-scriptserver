@@ -1,0 +1,14 @@
+[Unit]
+Description=Minecraft Script Server
+Documentation=https://github.com/jamie-pate/mc-scriptserver
+Wants=network-online.target
+After=network-online.target
+[Service]
+Type=simple
+User=valheim
+WorkingDirectory=/opt/servers/mc-scriptserver
+ExecStart=/home/valheim/.deno/bin/deno run --allow-all --unstable server.ts
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

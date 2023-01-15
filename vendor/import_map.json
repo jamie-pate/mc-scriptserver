@@ -1,0 +1,25 @@
+{
+  "imports": {
+    "https://esm.sh/@scriptserver/core?dev": "./esm.sh/@scriptserver/core@2.0.4.js",
+    "https://esm.sh/@scriptserver/essentials?dev": "./esm.sh/@scriptserver/essentials@2.0.4.js",
+    "https://esm.sh/@scriptserver/event?dev": "./esm.sh/@scriptserver/event@2.0.4.js",
+    "https://esm.sh/common-tags": "./esm.sh/common-tags@1.8.2.js",
+    "https://deno.land/": "./deno.land/",
+    "https://esm.sh/": "./esm.sh/"
+  },
+  "scopes": {
+    "./esm.sh/": {
+      "/v94/@scriptserver/event@2.0.4/deno/event.development.js": "./esm.sh/v94/@scriptserver/event@2.0.4/deno/event.development.js",
+      "/v94/lodash.defaultsdeep@4.6.1/deno/lodash.defaultsdeep.development.js": "./esm.sh/v94/lodash.defaultsdeep@4.6.1/deno/lodash.defaultsdeep.development.js",
+      "/v94/lodash.get@4.4.2/deno/lodash.get.development.js": "./esm.sh/v94/lodash.get@4.4.2/deno/lodash.get.development.js",
+      "./esm.sh/v94/@scriptserver/core@2.0.4/dist/Config": "./esm.sh/v94/@scriptserver/core@2.0.4/dist/Config.js",
+      "/v94/@scriptserver/command@2.0.4/deno/command.development.js": "./esm.sh/v94/@scriptserver/command@2.0.4/deno/command.development.js",
+      "/v94/@scriptserver/json@2.0.4/deno/json.development.js": "./esm.sh/v94/@scriptserver/json@2.0.4/deno/json.development.js",
+      "/v94/@scriptserver/util@2.0.4/deno/util.development.js": "./esm.sh/v94/@scriptserver/util@2.0.4/deno/util.development.js",
+      "/v94/lodash.template@4.5.0/deno/lodash.template.development.js": "./esm.sh/v94/lodash.template@4.5.0/deno/lodash.template.development.js",
+      "/v94/@scriptserver/core@2.0.4/deno/core.development.js": "./esm.sh/v94/@scriptserver/core@2.0.4/deno/core.development.js",
+      "/v94/lodash._reinterpolate@3.0.0/deno/lodash._reinterpolate.development.js": "./esm.sh/v94/lodash._reinterpolate@3.0.0/deno/lodash._reinterpolate.development.js",
+      "/v94/lodash.templatesettings@4.2.0/deno/lodash.templatesettings.development.js": "./esm.sh/v94/lodash.templatesettings@4.2.0/deno/lodash.templatesettings.development.js"
+    }
+  }
+}

@@ -90,7 +90,7 @@ function startServer(serverDir: string, rconPassword: string | null = null) {
       // path doesn't work in deno child_process
       path: relative(Deno.cwd(), serverDir),
       jar: `server.jar`,
-      args: ['-Xmx1024M', '-Xms1024M'],
+      args: ['-Xmx2048M'],
     },
     rconConnection: {
       port: 25575,
