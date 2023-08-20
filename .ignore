@@ -1,0 +1,3 @@
+# files with ! in front will be searchable with vscode
+# even if they are in .gitignore
+!server

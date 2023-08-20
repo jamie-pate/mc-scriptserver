@@ -13,13 +13,9 @@
       "runtimeExecutable": "deno",
       "runtimeArgs": [
         "run",
-        "--unstable",
-        "--inspect",
-        "--allow-all"
+        "--unstable"
       ],
-      "attachSimplePort": 9229,
       "outputCapture": "std",
-      //"console": "integratedTerminal",
       "skipFiles": [
         "<node_internals>/**",
         "runtime/**",
