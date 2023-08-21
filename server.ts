@@ -13,6 +13,7 @@ import {
 } from 'https://esm.sh/@scriptserver/essentials?dev';
 import { EventConfig } from 'https://esm.sh/@scriptserver/event?dev';
 import { source } from 'https://esm.sh/common-tags';
+import NatApi from 'https://esm.sh/@silentbot1/nat-api@0.4.7?dev';
 import { useLifeSteal } from './lifesteal.ts';
 
 type ServerProperties = Record<string, string>;
@@ -27,7 +28,11 @@ async function main(serverDir: string) {
     serverDir,
   );
   //const server =
-  await startServer(serverDir, serverProperties.rconPassword);
+  await startServer(
+    serverDir,
+    serverProperties.rconPassword,
+    serverProperties.serverPort,
+  );
 }
 
 async function readServerProperties(dir: string) {
@@ -84,7 +89,11 @@ type ServerConfig = DeepPartial<
   Config & { event: EventConfig; essentials: EssentialsConfig }
 >;
 
-function startServer(serverDir: string, rconPassword: string | null = null) {
+function startServer(
+  serverDir: string,
+  rconPassword: string | null = null,
+  port: string | null,
+) {
   const commands = source`
     ~sethome [name], ~delhome [name], ~home [name] (tp tp home),
     ~spawn (tp to spawn),
@@ -133,6 +142,7 @@ function startServer(serverDir: string, rconPassword: string | null = null) {
       },
     },
   };
+  const natClient = new NatApi({ enablePMP: true, enableUPNP: true });
   const server = new ScriptServer(config);
   useEssentials(server);
   useLifeSteal(server);
@@ -141,6 +151,14 @@ function startServer(serverDir: string, rconPassword: string | null = null) {
   checkEnv(config);
   try {
     server.start();
+    const portNum = port ? parseInt(port, 10) : 0;
+    if (portNum) {
+      natClient.map(portNum)
+        .then(() => console.log(`upnp port mapped: ${port}`))
+        .catch((err: Error) =>
+          console.log(`upnp port failed: ${err.message || err}`)
+        );
+    }
   } catch (ex) {
     if (server.javaServer.process && !server.javaServer.pid) {
       console.warn(
