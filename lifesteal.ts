@@ -1,40 +1,131 @@
 import { ScriptServer } from 'https://esm.sh/@scriptserver/core?dev';
+import 'https://esm.sh/@scriptserver/json?dev';
 
-const INITIAL_HEARTS = 20;
+const TEST_MODE = false;
+
+const MS_PER_SECOND = 1000;
+const MS_PER_HOUR = MS_PER_SECOND * 60 * 60;
+const MS_PER_DAY = MS_PER_HOUR * 24;
+
+const MAX_HEARTS = 25;
+const INITIAL_HEARTS = 10;
 const ONE_HEART = 2;
+const BAN_LENGTH = TEST_MODE ? 10 * MS_PER_SECOND : 0.5 * MS_PER_DAY;
+const INTERVAL = 10 * MS_PER_SECOND;
 
+const KEY = 'lifeSteal';
+const HEARTS_KEY = 'hearts';
+const BANS_KEY = 'bans';
+const HP_OBJECTIVE = 'lifesteal_hp';
+
+let saving: Promise<void> | null = null;
 export function useLifeSteal(server: ScriptServer) {
   const hearts = new Map<string, number>();
+  const bans = new Map<string, string>();
+  load(HEARTS_KEY, hearts);
+  load(BANS_KEY, bans);
+  server.javaServer.on('start', () => {
+    send(`scoreboard objectives add ${HP_OBJECTIVE} health`);
+  });
+
+  setInterval(() => {
+    for (const [player, playerHearts] of hearts) {
+      send(`scoreboard players get ${player} ${HP_OBJECTIVE}`);
+      setPlayerHearts(player, playerHearts);
+    }
+    for (const [player, banEndTime] of bans) {
+      if (new Date(banEndTime).getTime() <= Date.now()) {
+        send(`pardon ${player}`);
+        bans.delete(player);
+        setPlayerHearts(player, INITIAL_HEARTS);
+        save(BANS_KEY, bans);
+      }
+    }
+  }, INTERVAL);
 
   server.javaServer.on('console', (line: string) => {
-    const result = line.match(
+    const slain = line.match(
       /^\[[^\]]+] \[[^\]]+]: ([\w]+) was slain by ([\w]+)/,
-    );
-    if (result) {
-      const loser = result[1];
-      const winner = result[2];
-      let winnerHearts = hearts.has(winner)
-        ? hearts.get(winner)!
-        : INITIAL_HEARTS;
-      let loserHearts = hearts.has(loser) ? hearts.get(loser)! : INITIAL_HEARTS;
+    ) || TEST_MODE && line.match(/([\w]+) was slain by ([\w]+)/);
+    if (slain) {
+      const loser = slain[1];
+      const winner = slain[2];
+      let winnerHearts = getPlayerHearts(winner);
+      let loserHearts = getPlayerHearts(loser);
 
-      winnerHearts = winnerHearts + ONE_HEART;
-      loserHearts = loserHearts - ONE_HEART;
+      if (winnerHearts < MAX_HEARTS) {
+        winnerHearts = winnerHearts + 1;
+      }
+      loserHearts = loserHearts - 1;
+      if (loserHearts < 1) {
+        send(
+          `ban ${loser} You lost all your hearts, come back in ${
+            BAN_LENGTH / MS_PER_HOUR
+          } hours`,
+        );
+        bans.set(loser, new Date(Date.now() + BAN_LENGTH).toISOString());
+        save(BANS_KEY, bans);
+      }
 
-      hearts.set(winner, winnerHearts);
-      hearts.set(loser, loserHearts);
-
-      send(
-        `attribute ${winner} minecraft:generic.max_health base set ${winnerHearts}`,
-      );
-      send(
-        `attribute ${loser} minecraft:generic.max_health base set ${loserHearts}`,
-      );
+      setPlayerHearts(winner, winnerHearts);
+      setPlayerHearts(loser, loserHearts);
+    }
+    const healthMonitor =
+      /^\[[^\]]+] \[[^\]]+]: ([\w]+) has (\d+) \[lifesteal_hp]/.exec(line);
+    if (healthMonitor) {
+      const player = healthMonitor[1];
+      const hp = parseInt(healthMonitor[2] || '', 10);
+      if (hp && player) {
+        const currentHearts = hp / ONE_HEART;
+        const playerHearts = getPlayerHearts(player);
+        if (currentHearts > playerHearts) {
+          send(`effect give ${player} minecraft:poison 1 1 true`);
+        }
+      }
     }
   });
+
+  function getPlayerHearts(player: string) {
+    return hearts.has(player) ? hearts.get(player)! : INITIAL_HEARTS;
+  }
+
+  function setPlayerHearts(player: string, playerHearts: number) {
+    hearts.set(player, playerHearts);
+    send(
+      `attribute ${player} minecraft:generic.max_health base set ${
+        playerHearts * ONE_HEART
+      }`,
+    );
+    save(HEARTS_KEY, hearts);
+  }
 
   function send(command: string) {
     console.log(`Send command: ${command}`);
     server.javaServer.send(command);
+  }
+
+  // eventually save values from a map
+  function save<K, V>(prop_key: string, map: Map<K, V>): Promise<void> {
+    if (saving) {
+      return saving.then(() => save(prop_key, map));
+    } else {
+      return saving = server.json.set(KEY, prop_key, Array.from(map))
+        .then(() => {
+          saving = null;
+        }).catch((err: Error) => {
+          console.error('Error saving state', err);
+        });
+    }
+  }
+
+  // eventually load values into a map
+  function load<K, V>(prop_key: string, map: Map<K, V>) {
+    return server.json.get(KEY, prop_key).then((saved: [K, V][]) => {
+      if (saved && Array.isArray(saved)) {
+        for (const [key, value] of saved) {
+          map.set(key, value);
+        }
+      }
+    }).catch(console.error);
   }
 }

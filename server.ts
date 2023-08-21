@@ -15,56 +15,17 @@ import { EventConfig } from 'https://esm.sh/@scriptserver/event?dev';
 import { source } from 'https://esm.sh/common-tags';
 import NatApi from 'https://esm.sh/@silentbot1/nat-api@0.4.7?dev';
 import { useLifeSteal } from './lifesteal.ts';
+import { readServerProperties, ServerProperties } from './server-properties.ts';
 
-type ServerProperties = Record<string, string>;
-
-main(`${Deno.cwd()}/server`).catch((ex) => {
-  console.error(ex.stack);
-  Deno.exit(1);
-});
-
-async function main(serverDir: string) {
-  const serverProperties: ServerProperties = await readServerProperties(
-    serverDir,
-  );
-  //const server =
-  await startServer(
-    serverDir,
-    serverProperties.rconPassword,
-    serverProperties.serverPort,
-  );
-}
-
-async function readServerProperties(dir: string) {
+async function tryReadServerProperties(dir: string) {
   const SERVER_FIRST_RUN_DELAY = 60000; // 5 seconds
   try {
-    console.log('reading server.properties');
-    return (await Deno.readTextFile(`${dir}/server.properties`))
-      .split(/\r?\n/g)
-      .map((line) => {
-        const match = /^([^=]+)=(.*)$/.exec(line);
-        if (line.trimStart().startsWith('#') || !match) {
-          return null;
-        }
-        const key = String(match[1]).replace(
-          /[-.]([a-z])/g,
-          (m) => m[1].toUpperCase(),
-        );
-        return [key, match[2]] as [string, string];
-      })
-      .filter(
-        (v): v is [string, string] =>
-          !!v && typeof v[0] === 'string' && typeof v[1] === 'string',
-      )
-      .reduce((r, [key, value]) => {
-        r[key] = value;
-        return r;
-      }, {} as ServerProperties);
+    return await readServerProperties(dir);
   } catch (ex) {
     console.dir(ex);
     if (ex.code === 'ENOENT') {
       const server = await startServer(dir);
-      server.javaServer.on('console', (msg) => {
+      server.javaServer.on('console', (msg: string) => {
         if (msg.startsWith('You need to agree to the EULA')) {
           Deno.exit(1);
         }
@@ -85,6 +46,26 @@ async function readServerProperties(dir: string) {
   }
 }
 
+addEventListener('error', (err: ErrorEvent) => {
+  console.error('Uncaught exception: ', err);
+});
+main(`${Deno.cwd()}/server`).catch((ex) => {
+  console.error(ex.stack);
+  Deno.exit(1);
+});
+
+async function main(serverDir: string) {
+  const serverProperties: ServerProperties = await tryReadServerProperties(
+    serverDir,
+  );
+  //const server =
+  await startServer(
+    serverDir,
+    serverProperties.rconPassword,
+    serverProperties.serverPort,
+  );
+}
+
 type ServerConfig = DeepPartial<
   Config & { event: EventConfig; essentials: EssentialsConfig }
 >;
@@ -92,7 +73,7 @@ type ServerConfig = DeepPartial<
 function startServer(
   serverDir: string,
   rconPassword: string | null = null,
-  port: string | null,
+  port: string | null = null,
 ) {
   const commands = source`
     ~sethome [name], ~delhome [name], ~home [name] (tp tp home),
@@ -123,6 +104,7 @@ function startServer(
         opOnly: false,
       },
     },
+    json: { path: `${serverDir}/json` },
     event: {
       flavorSpecific: {
         default: {
@@ -151,6 +133,14 @@ function startServer(
   checkEnv(config);
   try {
     server.start();
+    console.log(`Launched ${server.javaServer.process.spawnargs.join(' ')}`);
+    server.javaServer.on(
+      'error',
+      (err: Error) =>
+        `Error with ${server.javaServer.process.spawnargs}: ${
+          err.stack || err
+        }`,
+    );
     const portNum = port ? parseInt(port, 10) : 0;
     if (portNum) {
       natClient.map(portNum)
