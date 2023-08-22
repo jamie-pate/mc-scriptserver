@@ -20,6 +20,7 @@ const HP_OBJECTIVE = 'lifesteal_hp';
 
 let saving: Promise<void> | null = null;
 export function useLifeSteal(server: ScriptServer) {
+  const onlinePlayers = new Set<string>();
   const hearts = new Map<string, number>();
   const bans = new Map<string, string>();
   load(HEARTS_KEY, hearts);
@@ -30,8 +31,10 @@ export function useLifeSteal(server: ScriptServer) {
 
   setInterval(() => {
     for (const [player, playerHearts] of hearts) {
-      send(`scoreboard players get ${player} ${HP_OBJECTIVE}`);
-      setPlayerHearts(player, playerHearts);
+      if (onlinePlayers.has(player)) {
+        setPlayerHearts(player, playerHearts);
+        send(`scoreboard players get ${player} ${HP_OBJECTIVE}`);
+      }
     }
     for (const [player, banEndTime] of bans) {
       if (new Date(banEndTime).getTime() <= Date.now()) {
@@ -88,8 +91,15 @@ export function useLifeSteal(server: ScriptServer) {
       }
     }
     const joined = /^\[[^\]]+] \[[^\]]+]: ([\w]+) joined the game$/.exec(line);
-    if (joined && hearts.has(joined[1])) {
-      hearts.set(joined[1], INITIAL_HEARTS);
+    if (joined) {
+      if (!hearts.has(joined[1])) {
+        hearts.set(joined[1], INITIAL_HEARTS);
+      }
+      onlinePlayers.add(joined[1]);
+    }
+    const left = /^\[[^\]]+] \[[^\]]+]: ([\w]+) left the game$/.exec(line);
+    if (left) {
+      onlinePlayers.delete(left[1]);
     }
   });
 
