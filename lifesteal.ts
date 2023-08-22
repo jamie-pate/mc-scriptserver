@@ -49,7 +49,7 @@ export function useLifeSteal(server: ScriptServer) {
       /^\[[^\]]+] \[[^\]]+]: ([\w]+) was (?:slain|shot) by ([\w]+)$/,
     ) || TEST_MODE && line.match(/([\w]+) was (?:slain|shot) by ([\w]+)$/);
     const isTest = TEST_MODE && slain && Array.from(slain).includes('test');
-    if (slain && isTest) {
+    if (slain || isTest) {
       const loser = slain[1];
       const winner = slain[2];
       if (hearts.has(winner) && hearts.has(loser) || isTest) {
