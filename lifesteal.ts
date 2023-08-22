@@ -44,34 +44,38 @@ export function useLifeSteal(server: ScriptServer) {
   }, INTERVAL);
 
   server.javaServer.on('console', (line: string) => {
+    line = line.trim();
     const slain = line.match(
-      /^\[[^\]]+] \[[^\]]+]: ([\w]+) was slain by ([\w]+)/,
-    ) || TEST_MODE && line.match(/([\w]+) was slain by ([\w]+)/);
-    if (slain) {
+      /^\[[^\]]+] \[[^\]]+]: ([\w]+) was (?:slain|shot) by ([\w]+)$/,
+    ) || TEST_MODE && line.match(/([\w]+) was (?:slain|shot) by ([\w]+)$/);
+    const isTest = TEST_MODE && slain && Array.from(slain).includes('test');
+    if (slain && isTest) {
       const loser = slain[1];
       const winner = slain[2];
-      let winnerHearts = getPlayerHearts(winner);
-      let loserHearts = getPlayerHearts(loser);
+      if (hearts.has(winner) && hearts.has(loser) || isTest) {
+        let winnerHearts = getPlayerHearts(winner);
+        let loserHearts = getPlayerHearts(loser);
 
-      if (winnerHearts < MAX_HEARTS) {
-        winnerHearts = winnerHearts + 1;
-      }
-      loserHearts = loserHearts - 1;
-      if (loserHearts < 1) {
-        send(
-          `ban ${loser} You lost all your hearts, come back in ${
-            BAN_LENGTH / MS_PER_HOUR
-          } hours`,
-        );
-        bans.set(loser, new Date(Date.now() + BAN_LENGTH).toISOString());
-        save(BANS_KEY, bans);
-      }
+        if (winnerHearts < MAX_HEARTS) {
+          winnerHearts = winnerHearts + 1;
+        }
+        loserHearts = loserHearts - 1;
+        if (loserHearts < 1) {
+          send(
+            `ban ${loser} You lost all your hearts, come back in ${
+              BAN_LENGTH / MS_PER_HOUR
+            } hours`,
+          );
+          bans.set(loser, new Date(Date.now() + BAN_LENGTH).toISOString());
+          save(BANS_KEY, bans);
+        }
 
-      setPlayerHearts(winner, winnerHearts);
-      setPlayerHearts(loser, loserHearts);
+        setPlayerHearts(winner, winnerHearts);
+        setPlayerHearts(loser, loserHearts);
+      }
     }
     const healthMonitor =
-      /^\[[^\]]+] \[[^\]]+]: ([\w]+) has (\d+) \[lifesteal_hp]/.exec(line);
+      /^\[[^\]]+] \[[^\]]+]: ([\w]+) has (\d+) \[lifesteal_hp]$/.exec(line);
     if (healthMonitor) {
       const player = healthMonitor[1];
       const hp = parseInt(healthMonitor[2] || '', 10);
@@ -82,6 +86,10 @@ export function useLifeSteal(server: ScriptServer) {
           send(`effect give ${player} minecraft:poison 1 1 true`);
         }
       }
+    }
+    const joined = /^\[[^\]]+] \[[^\]]+]: ([\w]+) joined the game$/.exec(line);
+    if (joined && hearts.has(joined[1])) {
+      hearts.set(joined[1], INITIAL_HEARTS);
     }
   });
 
