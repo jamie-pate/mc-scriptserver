@@ -49,8 +49,8 @@ export function useLifeSteal(server: ScriptServer) {
   server.javaServer.on('console', (line: string) => {
     line = line.trim();
     const slain = line.match(
-      /^\[[^\]]+] \[[^\]]+]: ([\w]+) was (?:slain|shot) by ([\w]+)$/,
-    ) || TEST_MODE && line.match(/([\w]+) was (?:slain|shot) by ([\w]+)$/);
+      /^\[[^\]]+] \[[^\]]+]: ([\w]+) was (?:slain|shot|doomed to fall) by ([\w]+)$/,
+    ) || TEST_MODE && line.match(/([\w]+) was (?:slain|shot|doomed to fall) by ([\w]+)$/);
     const isTest = TEST_MODE && slain && Array.from(slain).includes('test');
     if (slain || isTest) {
       const loser = slain[1];
