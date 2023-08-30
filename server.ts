@@ -102,7 +102,9 @@ function startServer(
       },
       warp: {
         opOnly: false,
-      },
+      },starterKit: {
+        enabled: false
+      }
     },
     json: { path: `${serverDir}/json` },
     event: {
