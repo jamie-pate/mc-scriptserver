@@ -5,12 +5,12 @@ const TEST_MODE = false;
 
 const MS_PER_SECOND = 1000;
 const MS_PER_HOUR = MS_PER_SECOND * 60 * 60;
-//const MS_PER_DAY = MS_PER_HOUR * 24;
+const MS_PER_DAY = MS_PER_HOUR * 24;
 
-const MAX_HEARTS = 25;
+const MAX_HEARTS = 30;
 const INITIAL_HEARTS = 10;
 const ONE_HEART = 2;
-const BAN_LENGTH = TEST_MODE ? 10 * MS_PER_SECOND : 8 * MS_PER_HOUR;
+const BAN_LENGTH = TEST_MODE ? 10 * MS_PER_SECOND : 7 * MS_PER_DAY;
 const INTERVAL = 10 * MS_PER_SECOND;
 
 const KEY = 'lifeSteal';
