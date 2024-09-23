@@ -51,9 +51,12 @@ export function useCombatTp(server: ScriptServer) {
   load(DMG_KEY, dmg);
   load(COOLDOWN_KEY, tpCooldowns);
   handleInCombatTimeout()
-  server.javaServer.on('start', () => {
+  server.javaServer.on('start', async () => {
+    await new Promise(r => setTimeout(r, 1000));
     send(`scoreboard objectives add ${DMG_OBJECTIVE} minecraft.custom:minecraft.damage_taken`);
+    await new Promise(r => setTimeout(r, 1000));
     send(`scoreboard objectives modify ${DMG_OBJECTIVE} displayname "In Combat"`);
+    await new Promise(r => setTimeout(r, 1000));
     send(`scoreboard objectives modify ${DMG_OBJECTIVE} numberformat blank`);
   });
 
