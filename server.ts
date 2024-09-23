@@ -1,4 +1,3 @@
-import { relative } from 'node:path';
 import { accessSync } from 'node:fs';
 
 import { sync as whichSync } from 'https://esm.sh/which';
@@ -12,10 +11,13 @@ import {
   useEssentials,
 } from 'https://esm.sh/@scriptserver/essentials?dev';
 import { EventConfig } from 'https://esm.sh/@scriptserver/event?dev';
+import { JsonConfig } from 'https://esm.sh/@scriptserver/json?dev';
 import { source } from 'https://esm.sh/common-tags';
 import NatApi from 'https://esm.sh/@silentbot1/nat-api@0.4.7?dev';
-import { useLifeSteal } from './lifesteal.ts';
+import { useCombatTp } from './combat-tp.ts';
+//import { useLifeSteal } from './lifesteal.ts';
 import { readServerProperties, ServerProperties } from './server-properties.ts';
+import { CombatTpConfig } from './combat-tp.ts';
 
 async function tryReadServerProperties(dir: string) {
   const SERVER_FIRST_RUN_DELAY = 60000; // 5 seconds
@@ -62,17 +64,24 @@ async function main(serverDir: string) {
   await startServer(
     serverDir,
     serverProperties.rconPassword,
+    serverProperties.rconPort,
     serverProperties.serverPort,
   );
 }
 
 type ServerConfig = DeepPartial<
-  Config & { event: EventConfig; essentials: EssentialsConfig }
+  Config & {
+    event: EventConfig;
+    essentials: EssentialsConfig;
+    json: JsonConfig;
+    combatTp: CombatTpConfig;
+  }
 >;
 
 function startServer(
   serverDir: string,
   rconPassword: string | null = null,
+  rconPort: string | null = null,
   port: string | null = null,
 ) {
   const commands = source`
@@ -91,7 +100,7 @@ function startServer(
       args: ['-Xmx2048M'],
     },
     rconConnection: {
-      port: 25575,
+      port: rconPort ? parseInt(rconPort) : 25575,
       password: rconPassword || '',
     },
     essentials: {
@@ -101,12 +110,16 @@ function startServer(
         text: `Welcome back \${player}! Commands are:\n${commands}`,
       },
       warp: {
-        opOnly: false,
-      },starterKit: {
-        enabled: false
-      }
+        opOnly: false
+      },
+
+      starterKit: {
+        enabled: false,
+      },
     },
     json: { path: `${serverDir}/json` },
+    combatTp: {
+    },
     event: {
       flavorSpecific: {
         default: {
@@ -129,7 +142,8 @@ function startServer(
   const natClient = new NatApi({ enablePMP: true, enableUPNP: true });
   const server = new ScriptServer(config);
   useEssentials(server);
-  useLifeSteal(server);
+  useCombatTp(server);
+  //useLifeSteal(server);
   const oldDir = Deno.cwd();
   Deno.chdir(serverDir);
   checkEnv(config);

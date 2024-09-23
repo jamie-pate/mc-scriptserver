@@ -12,8 +12,7 @@
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "deno",
       "runtimeArgs": [
-        "run",
-        "--unstable"
+        "run"
       ],
       "outputCapture": "std",
       "skipFiles": [

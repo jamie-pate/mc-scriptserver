@@ -13,7 +13,7 @@ const ONE_HEART = 2;
 const BAN_LENGTH = TEST_MODE ? 10 * MS_PER_SECOND : 7 * MS_PER_DAY;
 const INTERVAL = 10 * MS_PER_SECOND;
 
-const KEY = 'lifeSteal';
+const MODULE_KEY = 'lifeSteal';
 const HEARTS_KEY = 'hearts';
 const BANS_KEY = 'bans';
 const HP_OBJECTIVE = 'lifesteal_hp';
@@ -127,7 +127,7 @@ export function useLifeSteal(server: ScriptServer) {
     if (saving) {
       return saving.then(() => save(prop_key, map));
     } else {
-      return saving = server.json.set(KEY, prop_key, Array.from(map))
+      return saving = server.json.set(MODULE_KEY, prop_key, Array.from(map))
         .then(() => {
           saving = null;
         }).catch((err: Error) => {
@@ -138,7 +138,7 @@ export function useLifeSteal(server: ScriptServer) {
 
   // eventually load values into a map
   function load<K, V>(prop_key: string, map: Map<K, V>) {
-    return server.json.get(KEY, prop_key).then((saved: [K, V][]) => {
+    return server.json.get(MODULE_KEY, prop_key).then((saved: [K, V][]) => {
       if (saved && Array.isArray(saved)) {
         for (const [key, value] of saved) {
           map.set(key, value);

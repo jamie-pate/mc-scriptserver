@@ -7,8 +7,8 @@ Requirements:
   ./server
 - Java:
   - [Windows](https://learn.microsoft.com/en-us/java/openjdk/install#install-on-windows-with-the-windows-package-manager-winget):
-    `winget install Microsoft.OpenJDK.17 --custom ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome`
-  - Ubuntu: `sudo apt install openjdk-17-jre`
+    `winget install Microsoft.OpenJDK.21 --custom ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome`
+  - Ubuntu: `sudo apt install openjdk-21-jre`
   - `java` or `java.exe` must be available in the path, you might have to log
     out and back in.
 
