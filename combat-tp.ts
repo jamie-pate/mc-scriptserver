@@ -15,7 +15,7 @@ const DMG_KEY = 'combat_dmg';
 const COOLDOWN_KEY = 'tp_cooldowns';
 const IN_COMBAT_KEY = 'in_combat';
 const DMG_OBJECTIVE = 'combat_dmg';
-const DMG_EXPR = /^(?:\[[^\]]+] \[[^\]]+]: )?([\w]+) has (\d+) \[In Combat]$/;
+const DMG_EXPR = /^(?:\[[^\]]+] \[[^\]]+]: )?([\w]+) has (\d+) \[(?:combat_dmg|In Combat)]$/;
 
 export interface CombatTpConfig {
   /**
@@ -29,8 +29,8 @@ export interface CombatTpConfig {
 }
 
 export const DEFAULT_COMBAT_TP_CONFIG: Required<CombatTpConfig> = {
-  combatDuration: 30,
-  tpCooldown: 120
+  combatDuration: 20,
+  tpCooldown: 60
 }
 
 let saving: Promise<void> | null = null;
@@ -52,12 +52,9 @@ export function useCombatTp(server: ScriptServer) {
   load(COOLDOWN_KEY, tpCooldowns);
   handleInCombatTimeout()
   server.javaServer.on('start', async () => {
-    await new Promise(r => setTimeout(r, 1000));
-    send(`scoreboard objectives add ${DMG_OBJECTIVE} minecraft.custom:minecraft.damage_taken`);
-    await new Promise(r => setTimeout(r, 1000));
-    send(`scoreboard objectives modify ${DMG_OBJECTIVE} displayname "In Combat"`);
-    await new Promise(r => setTimeout(r, 1000));
-    send(`scoreboard objectives modify ${DMG_OBJECTIVE} numberformat blank`);
+    await rconSend(`scoreboard objectives add ${DMG_OBJECTIVE} minecraft.custom:minecraft.damage_taken`);
+    await rconSend(`scoreboard objectives modify ${DMG_OBJECTIVE} displayname "In Combat"`);
+    await rconSend(`scoreboard objectives modify ${DMG_OBJECTIVE} numberformat blank`);
   });
 
   setInterval(() => {
@@ -128,8 +125,8 @@ export function useCombatTp(server: ScriptServer) {
       if (cooldownMs > Date.now()) {
         const cooldownSeconds = (cooldownMs - Date.now()) / MS_PER_SECOND;
         denyTp(event.player, `Cooldown for ${cooldownSeconds.toFixed(0)} seconds`, 'blue');
-      } else if (await checkInCombat(event.player)) {
-        denyTp(event.player, 'You are in combat');
+      //} else if (await checkInCombat(event.player)) {
+        //denyTp(event.player, 'You are in combat');
       } else {
         setCooldown(event.player, Date.now() + config.tpCooldown * MS_PER_SECOND);
         return cb(event);
