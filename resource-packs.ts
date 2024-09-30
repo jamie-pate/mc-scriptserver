@@ -46,7 +46,7 @@ export async function useResourcePacks(server: ScriptServer, serverProperties: R
                     for (const o of objectives) {
                         await server.rconConnection.send(`scoreboard players set ${player} ${o} 0`);
                     }
-                    await server.rconConnection.send('gamemode survival @s');
+                    await server.rconConnection.send(`gamemode survival ${player}`);
                     await server.rconConnection.send(`pardon ${player}`);
                 }
             }
