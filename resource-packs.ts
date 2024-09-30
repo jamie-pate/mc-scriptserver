@@ -37,6 +37,7 @@ export async function useResourcePacks(server: ScriptServer, serverProperties: R
             for (const [, player, reason] of matches) {
                 // max0verdrive was banned by Server: "lost at lifesteal"
                 if (player && reason === "lost at lifesteal") {
+                    console.log(`Unbanning ${player}`);
                     const objectives = [
                         'Hearts',
                         'Deaths',

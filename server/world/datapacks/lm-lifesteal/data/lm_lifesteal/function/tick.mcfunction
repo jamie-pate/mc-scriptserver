@@ -36,7 +36,7 @@ execute as @e[limit=1,sort=random,type=player] at @s if score @s Hearts matches 
 execute as @e[limit=1,sort=random,type=player] at @s if score @s Hearts matches 11.. run scoreboard players operation @s Other -= @s OneHeart
 
 #execute as @a[limit=1,sort=random] at @s if score @s Hearts matches ..-10 run scoreboard players operation @s Other += @s OneHeart
-execute as @a at @s if score @s Hearts matches ..-10 run gamemode spectator @s
+#execute as @a at @s if score @s Hearts matches ..-10 run gamemode spectator @s
 execute as @a at @s if score @s Hearts matches ..-10 run title @s actionbar "§4You Lose"
 execute as @a[limit=1,sort=random] at @s if score @s Hearts matches ..-10 run ban @p "lost at lifesteal"
 
