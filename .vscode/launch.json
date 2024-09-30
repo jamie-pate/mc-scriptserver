@@ -12,7 +12,7 @@
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "deno",
       "runtimeArgs": [
-        "run"
+        "run", "--unstable-cron"
       ],
       "outputCapture": "std",
       "skipFiles": [

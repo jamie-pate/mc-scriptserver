@@ -18,6 +18,7 @@ import { useCombatTp } from './combat-tp.ts';
 //import { useLifeSteal } from './lifesteal.ts';
 import { readServerProperties, ServerProperties } from './server-properties.ts';
 import { CombatTpConfig } from './combat-tp.ts';
+import { useResourcePacks } from './resource-packs.ts';
 
 async function tryReadServerProperties(dir: string) {
   const SERVER_FIRST_RUN_DELAY = 60000; // 5 seconds
@@ -26,7 +27,7 @@ async function tryReadServerProperties(dir: string) {
   } catch (ex) {
     console.dir(ex);
     if (ex.code === 'ENOENT') {
-      const server = await startServer(dir);
+      const server = await startServer(dir, null);
       server.javaServer.on('console', (msg: string) => {
         if (msg.startsWith('You need to agree to the EULA')) {
           Deno.exit(1);
@@ -63,9 +64,10 @@ async function main(serverDir: string) {
   //const server =
   await startServer(
     serverDir,
+    serverProperties,
     serverProperties.rconPassword,
     serverProperties.rconPort,
-    serverProperties.serverPort,
+    serverProperties.serverPort
   );
 }
 
@@ -80,6 +82,7 @@ type ServerConfig = DeepPartial<
 
 function startServer(
   serverDir: string,
+  serverProperties: Record<string, string> | null,
   rconPassword: string | null = null,
   rconPort: string | null = null,
   port: string | null = null,
@@ -141,6 +144,7 @@ function startServer(
   };
   const natClient = new NatApi({ enablePMP: true, enableUPNP: true });
   const server = new ScriptServer(config);
+  useResourcePacks(server, serverProperties);
   useEssentials(server);
   useCombatTp(server);
   //useLifeSteal(server);

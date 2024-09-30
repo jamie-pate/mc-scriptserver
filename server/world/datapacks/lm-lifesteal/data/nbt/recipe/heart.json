@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "# #",
+    "/?/",
+    "# #"
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "/": {
+      "item": "minecraft:diamond"
+    },
+	"?": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "result": {
+    "id": "minecraft:nether_star",
+    "components":{
+      "custom_name":"[{'text':'Heart','italic':false,'color':red}]",
+	  "food":{"nutrition":0,"saturation":0,"can_always_eat":true,"eat_seconds":1000000
+	  }
+    }
+  }
+}

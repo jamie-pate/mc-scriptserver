@@ -1,0 +1,2 @@
+tellraw @s "§eThis LifeSteal datapack made by lalimatyus. :)"
+tellraw @s ["","Feedback at:","\n",{"text":"https://www.planetminecraft.com/data-pack/lifesteal-datapack-6324109/","bold":true,"underlined":true,"color":"green","clickEvent":{"action":"open_url","value":"https://www.planetminecraft.com/data-pack/lifesteal-datapack-6324109/"},"hoverEvent":{"action":"show_text","contents":["Click"]}}]
