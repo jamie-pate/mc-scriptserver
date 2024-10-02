@@ -88,7 +88,8 @@ function startServer(
   port: string | null = null,
 ) {
   const commands = source`
-    ~sethome [name], ~delhome [name], ~home [name] (tp tp home),
+    /trigger withdraw to withdraw a heart. You have to stand still for teleports!
+    ~sethome [name], ~delhome [name], ~home [name] (tp home),
     ~spawn (tp to spawn),
     ~setwarp <name>, ~delwarp <name>, ~warp <name>,
     ~tpa <username> (tp to user),
