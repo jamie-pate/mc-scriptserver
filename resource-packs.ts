@@ -13,8 +13,13 @@ export async function useResourcePacks(server: ScriptServer, serverProperties: R
             }
         }
     }
+    const TZ_OFFSET = new Date().getTimezoneOffset() / 60;
+    // https://github.com/denoland/deno/issues/21562
+    // cron schedule is in UTC TIME
+    const UNBAN_HOUR = 5;
+
     // https://www.ibm.com/docs/en/db2/11.5?topic=task-unix-cron-format
-    const UNBAN_SCHEDULE = "0 16 * * *"
+    const UNBAN_SCHEDULE = `0 ${UNBAN_HOUR - TZ_OFFSET} * * *`
     const WB_SIZE = 20000;
     // maybe we need to zip a clientdatapack later?
     // const dataPackDir = 'server/world/datapacks';
@@ -30,7 +35,7 @@ export async function useResourcePacks(server: ScriptServer, serverProperties: R
         await server.rconConnection.send(`worldborder set ${WB_SIZE}`);
         await server.rconConnection.send('function lm_lifesteal:load');
         //await server.rconConnection.send('function combatlogging:load');
-        console.log(`Starting unban chron job with the following schedule: ${UNBAN_SCHEDULE}`);
+        console.log(`Starting unban chron job with the following schedule: ${UNBAN_SCHEDULE} (UNBAN HOURE: ${UNBAN_HOUR})`);
         Deno.cron('Unban banned users', UNBAN_SCHEDULE, async () => {
             const response = await server.rconConnection.send('banlist');
             const matches = [...response.matchAll(/\b([\w]+) was banned by [\w]+: "([^"]+)"/g)];
