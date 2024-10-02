@@ -36,7 +36,7 @@ export async function useResourcePacks(server: ScriptServer, serverProperties: R
         await server.rconConnection.send(`worldborder set ${WB_SIZE}`);
         await server.rconConnection.send('function lm_lifesteal:load');
         //await server.rconConnection.send('function combatlogging:load');
-        console.log(`Starting unban chron job with the following schedule: ${UNBAN_SCHEDULE} (UNBAN HOURE: ${UNBAN_HOUR})`);
+        console.log(`Starting unban chron job with the following schedule: ${UNBAN_SCHEDULE} (UNBAN HOUR: ${UNBAN_HOUR})`);
         Deno.cron('Unban banned users', UNBAN_SCHEDULE, async () => {
             const response = await server.rconConnection.send('banlist');
             const matches = [...response.matchAll(/\b([\w]+) was banned by [\w]+: "([^"]+)"/g)];

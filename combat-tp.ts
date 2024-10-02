@@ -136,6 +136,7 @@ export function useCombatTp(server: ScriptServer) {
             stationaryPlayer = ap.target;
             // teleport another player to you, they need to stand still for 5s after tpaccept
             refPos = ap.targetPos;
+          }
         }
         if (posClose(pos, refPos)) {
           cb(event);
@@ -144,7 +145,6 @@ export function useCombatTp(server: ScriptServer) {
             denyTp(ap.source, `Cancelled ${cmd} because ${stationaryPlayer} moved!`);
           }
           denyTp(event.player, `Cancelled ${cmd} because ${stationaryPlayer} moved!`);
-        }
         }
         function posClose(a: McLocation, b: McLocation) {
           for (const [k, v] of Object.entries(a) as [keyof McLocation, number|string][]) {
