@@ -17,9 +17,10 @@ export async function useResourcePacks(server: ScriptServer, serverProperties: R
     // https://github.com/denoland/deno/issues/21562
     // cron schedule is in UTC TIME
     const UNBAN_HOUR = 5;
+    const hour = (UNBAN_HOUR - TZ_OFFSET + 24) % 24;
 
     // https://www.ibm.com/docs/en/db2/11.5?topic=task-unix-cron-format
-    const UNBAN_SCHEDULE = `0 ${UNBAN_HOUR - TZ_OFFSET} * * *`
+    const UNBAN_SCHEDULE = `0 ${hour} * * *`
     const WB_SIZE = 20000;
     // maybe we need to zip a clientdatapack later?
     // const dataPackDir = 'server/world/datapacks';
