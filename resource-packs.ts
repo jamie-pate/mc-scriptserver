@@ -14,7 +14,7 @@ export async function useResourcePacks(server: ScriptServer, serverProperties: R
         }
     }
     // https://www.ibm.com/docs/en/db2/11.5?topic=task-unix-cron-format
-    const UNBAN_SCHEDULE = "* * * * *"
+    const UNBAN_SCHEDULE = "0 16 * * *"
     const WB_SIZE = 20000;
     // maybe we need to zip a clientdatapack later?
     // const dataPackDir = 'server/world/datapacks';
@@ -33,7 +33,8 @@ export async function useResourcePacks(server: ScriptServer, serverProperties: R
         console.log(`Starting unban chron job with the following schedule: ${UNBAN_SCHEDULE}`);
         Deno.cron('Unban banned users', UNBAN_SCHEDULE, async () => {
             const response = await server.rconConnection.send('banlist');
-            const matches = response.matchAll(/\b([\w]+) was banned by [\w]+: "([^"]+)"/g);
+            const matches = [...response.matchAll(/\b([\w]+) was banned by [\w]+: "([^"]+)"/g)];
+	    console.log(`Running unban ${matches}`);
             for (const [, player, reason] of matches) {
                 // max0verdrive was banned by Server: "lost at lifesteal"
                 if (player && reason === "lost at lifesteal") {
